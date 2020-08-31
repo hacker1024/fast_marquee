@@ -375,10 +375,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
       vsync: this,
       duration: _MarqueePainter.getDurationFromVelocity(
           widget.velocity, _textSize.width, widget.blankSpace),
-    )..addListener(() {
-        // The painter widget must rebuild when the animation changes
-        setState(() {});
-      });
+    );
 
     // Create a scaled, curved animation that has a value equal to the horizontal text position
     _textAnimation = (widget.reverse
@@ -399,7 +396,12 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
       // Restart or reverse the animation when required
       _controller.addStatusListener((status) async {
+        // Set state so the widget rebuilds with/without a fade
+        if (widget.showFadingOnlyWhenScrolling) setState(() {});
+
+        // Wait for the pauseAfterRound time
         await Future.delayed(widget.pauseAfterRound);
+
         if (!mounted || _roundsComplete) return;
         if (widget.bounce && status == AnimationStatus.dismissed) {
           _controller.forward(from: 0);
@@ -442,15 +444,20 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     // Make the custom painter
-    final scroller = CustomPaint(
-      size: Size(double.infinity, _textSize.height),
-      painter: _MarqueePainter(
-        horizontalTextPosition: _textAnimation.value,
-        textPainter: _textPainter,
-        textSize: _textSize,
-        blankSpace: widget.blankSpace,
-        startPadding: widget.startPadding,
-      ),
+    final scroller = AnimatedBuilder(
+      animation: _textAnimation,
+      builder: (context, _) {
+        return CustomPaint(
+          size: Size(double.infinity, _textSize.height),
+          painter: _MarqueePainter(
+            horizontalTextPosition: _textAnimation.value,
+            textPainter: _textPainter,
+            textSize: _textSize,
+            blankSpace: widget.blankSpace,
+            startPadding: widget.startPadding,
+          ),
+        );
+      },
     );
 
     // Flutter doesn't support the shader used on Web yet.
