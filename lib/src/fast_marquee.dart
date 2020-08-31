@@ -451,19 +451,17 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
       ),
     );
 
-    return Expanded(
-      child: (widget._fadeGradient != null &&
-              (!widget.showFadingOnlyWhenScrolling || _controller.isAnimating))
-          ? ShaderMask(
-              child: scroller,
-              shaderCallback: (rect) {
-                return widget._fadeGradient.createShader(
-                  Rect.fromLTRB(0, 0, rect.width, rect.height),
-                );
-              },
-            )
-          : scroller,
-    );
+    return (widget._fadeGradient != null &&
+            (!widget.showFadingOnlyWhenScrolling || _controller.isAnimating))
+        ? ShaderMask(
+            child: scroller,
+            shaderCallback: (rect) {
+              return widget._fadeGradient.createShader(
+                Rect.fromLTRB(0, 0, rect.width, rect.height),
+              );
+            },
+          )
+        : scroller;
   }
 }
 
