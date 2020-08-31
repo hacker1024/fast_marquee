@@ -2,6 +2,7 @@ library fast_marquee;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 /// A widget that repeats text and automatically scrolls it infinitely.
@@ -440,6 +441,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Make the custom painter
     final scroller = CustomPaint(
       size: Size(double.infinity, _textSize.height),
       painter: _MarqueePainter(
@@ -451,17 +453,23 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
       ),
     );
 
-    return (widget._fadeGradient != null &&
-            (!widget.showFadingOnlyWhenScrolling || _controller.isAnimating))
-        ? ShaderMask(
-            child: scroller,
-            shaderCallback: (rect) {
-              return widget._fadeGradient.createShader(
-                Rect.fromLTRB(0, 0, rect.width, rect.height),
-              );
-            },
-          )
-        : scroller;
+    // Flutter doesn't support the shader used on Web yet.
+    if (kIsWeb) return scroller;
+
+    // Don't draw a gradient shader if the gradient isn't assigned, or if
+    // the widget isn't scrolling and it's set not to fade in that circumstance
+    if ((widget._fadeGradient == null ||
+        (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating)))
+      return scroller;
+
+    return ShaderMask(
+      child: scroller,
+      shaderCallback: (rect) {
+        return widget._fadeGradient.createShader(
+          Rect.fromLTRB(0, 0, rect.width, rect.height),
+        );
+      },
+    );
   }
 }
 
