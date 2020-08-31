@@ -393,6 +393,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Wait for the duration passed in startAfter
       await Future.delayed(widget.startAfter);
+      if (!mounted) return;
 
       // Restart or reverse the animation when required
       _controller.addStatusListener((status) async {
