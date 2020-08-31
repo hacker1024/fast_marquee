@@ -465,9 +465,18 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
     return ShaderMask(
       child: scroller,
       shaderCallback: (rect) {
-        return widget._fadeGradient.createShader(
-          Rect.fromLTRB(0, 0, rect.width, rect.height),
-        );
+        final shaderRect = Rect.fromLTRB(0, 0, rect.width, rect.height);
+
+        // Don't fade if the text won't scroll at all
+        // and fading while not scrolling is off
+        if (widget.showFadingOnlyWhenScrolling &&
+            _textSize.width < rect.width) {
+          return const LinearGradient(
+            colors: const <Color>[Colors.black, Colors.black],
+          ).createShader(shaderRect);
+        }
+
+        return widget._fadeGradient.createShader(shaderRect);
       },
     );
   }
