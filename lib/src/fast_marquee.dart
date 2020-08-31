@@ -25,16 +25,16 @@ import 'package:flutter/material.dart';
 ///   style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
 ///   velocity: 100,
 ///   blankSpace: 10,
-///    startPadding: 10,
-///    reverse: true,
-///    bounce: true,
-///    startAfter: const Duration(seconds: 2),
-///    pauseAfterRound: const Duration(seconds: 1),
-///    numberOfRounds: 5,
-///    showFadingOnlyWhenScrolling: false,
-///    fadingEdgeStartFraction: 0.05,
-///    fadingEdgeEndFraction: 0.05,
-///    curve: Curves.easeInOut,
+///   startPadding: 10,
+///   reverse: true,
+///   bounce: true,
+///   startAfter: const Duration(seconds: 2),
+///   pauseAfterRound: const Duration(seconds: 1),
+///   numberOfRounds: 5,
+///   showFadingOnlyWhenScrolling: false,
+///   fadingEdgeStartFraction: 0.05,
+///   fadingEdgeEndFraction: 0.05,
+///   curve: Curves.easeInOut,
 /// )
 /// ```
 class Marquee extends StatefulWidget {
@@ -55,12 +55,23 @@ class Marquee extends StatefulWidget {
     this.fadingEdgeEndFraction = 0,
     final Curve curve = Curves.linear,
   })  : _curveTween = CurveTween(curve: curve),
-        _fadeGradient = fadingEdgeStartFraction == 0 && fadingEdgeEndFraction == 0
-            ? null
-            : LinearGradient(
-                colors: const [Colors.transparent, Colors.black, Colors.black, Colors.transparent],
-                stops: [0, fadingEdgeStartFraction, 1 - fadingEdgeEndFraction, 1],
-              ),
+        _fadeGradient =
+            fadingEdgeStartFraction == 0 && fadingEdgeEndFraction == 0
+                ? null
+                : LinearGradient(
+                    colors: const [
+                      Colors.transparent,
+                      Colors.black,
+                      Colors.black,
+                      Colors.transparent,
+                    ],
+                    stops: [
+                      0,
+                      fadingEdgeStartFraction,
+                      1 - fadingEdgeEndFraction,
+                      1,
+                    ],
+                  ),
         assert(
             text != null,
             'The text cannot be null. If you don\'t want to display something, '
@@ -75,7 +86,8 @@ class Marquee extends StatefulWidget {
         assert(velocity != null),
         assert(!velocity.isNaN),
         assert(velocity != 0.0, 'The velocity cannot be zero.'),
-        assert(velocity > 0, 'The velocity cannot be negative. Set reverse to true instead.'),
+        assert(velocity > 0,
+            'The velocity cannot be negative. Set reverse to true instead.'),
         assert(velocity.isFinite),
         assert(
             startAfter != null,
@@ -89,15 +101,19 @@ class Marquee extends StatefulWidget {
             pauseAfterRound >= Duration.zero,
             'The pauseAfterRound cannot be negative as time travel isn\'t '
             'invented yet.'),
-        assert(fadingEdgeStartFraction >= 0 && fadingEdgeStartFraction <= 0.5, 'The fadingEdgeGradientFractionOnStart value should be between 0 and 0.5, inclusive'),
-        assert(fadingEdgeEndFraction >= 0 && fadingEdgeEndFraction <= 0.5, 'The fadingEdgeGradientFractionOnEnd value should be between 0 and 0.5, inclusive'),
+        assert(fadingEdgeStartFraction >= 0 && fadingEdgeStartFraction <= 0.5,
+            'The fadingEdgeGradientFractionOnStart value should be between 0 and 0.5, inclusive'),
+        assert(fadingEdgeEndFraction >= 0 && fadingEdgeEndFraction <= 0.5,
+            'The fadingEdgeGradientFractionOnEnd value should be between 0 and 0.5, inclusive'),
         assert(
             startPadding != null,
             'The start padding cannot be null. If you don\'t want any '
             'startPadding, consider setting it to zero.'),
-        assert(startPadding <= blankSpace, 'The startPadding must be less than or equal to the blankSpace.'),
+        assert(startPadding <= blankSpace,
+            'The startPadding must be less than or equal to the blankSpace.'),
         assert(numberOfRounds == null || numberOfRounds > 0),
-        assert(curve != null, 'Curve cannot be null. If you don\'t want to use one, consider using Curves.linear.'),
+        assert(curve != null,
+            'Curve cannot be null. If you don\'t want to use one, consider using Curves.linear.'),
         super(key: key);
 
   /// The text to be displayed.
@@ -320,7 +336,14 @@ class Marquee extends StatefulWidget {
   _MarqueeState createState() => _MarqueeState();
 
   bool equals(Object other) {
-    return other is Marquee && text == other.text && style == other.style && blankSpace == other.blankSpace && velocity == other.velocity && startPadding == other.startPadding && pauseAfterRound == other.pauseAfterRound && numberOfRounds == other.numberOfRounds;
+    return other is Marquee &&
+        text == other.text &&
+        style == other.style &&
+        blankSpace == other.blankSpace &&
+        velocity == other.velocity &&
+        startPadding == other.startPadding &&
+        pauseAfterRound == other.pauseAfterRound &&
+        numberOfRounds == other.numberOfRounds;
   }
 }
 
@@ -349,7 +372,8 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
     // Create the animation controller
     _controller = AnimationController(
       vsync: this,
-      duration: _MarqueePainter.getDurationFromVelocity(widget.velocity, _textSize.width, widget.blankSpace),
+      duration: _MarqueePainter.getDurationFromVelocity(
+          widget.velocity, _textSize.width, widget.blankSpace),
     )..addListener(() {
         // The painter widget must rebuild when the animation changes
         setState(() {});
@@ -396,7 +420,9 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
       if (widget.numberOfRounds != null) {
         Timer(
           Duration(
-            microseconds: ((_controller.duration.inMicroseconds + widget.pauseAfterRound.inMicroseconds) * widget.numberOfRounds),
+            microseconds: ((_controller.duration.inMicroseconds +
+                    widget.pauseAfterRound.inMicroseconds) *
+                widget.numberOfRounds),
           ),
           () {
             _roundsComplete = true;
@@ -426,7 +452,8 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
     );
 
     return Expanded(
-      child: (widget._fadeGradient != null && (!widget.showFadingOnlyWhenScrolling || _controller.isAnimating))
+      child: (widget._fadeGradient != null &&
+              (!widget.showFadingOnlyWhenScrolling || _controller.isAnimating))
           ? ShaderMask(
               child: scroller,
               shaderCallback: (rect) {
@@ -455,16 +482,23 @@ class _MarqueePainter extends CustomPainter {
     @required this.startPadding,
   });
 
-  static Duration getDurationFromVelocity(double velocity, double textWidth, double blankSpace) {
+  static Duration getDurationFromVelocity(
+    double velocity,
+    double textWidth,
+    double blankSpace,
+  ) {
     return Duration(
-      microseconds: ((Duration.microsecondsPerSecond / velocity) * (textWidth + blankSpace)).toInt(),
+      microseconds: ((Duration.microsecondsPerSecond / velocity) *
+              (textWidth + blankSpace))
+          .toInt(),
     );
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     final old = (oldDelegate as _MarqueePainter);
-    return (horizontalTextPosition != old.horizontalTextPosition || textSize.width != old.textSize.width);
+    return (horizontalTextPosition != old.horizontalTextPosition ||
+        textSize.width != old.textSize.width);
   }
 
   @override
@@ -483,7 +517,16 @@ class _MarqueePainter extends CustomPainter {
 
     // Draw the text twice in succession, with relation to the calculated horizontal offset.
     // Drawn twice because there will only be a maximum of two texts visible at any point in time.
-    textPainter.paint(canvas, Offset(startPadding + horizontalTextPosition, verticalPosition));
-    textPainter.paint(canvas, Offset(startPadding + horizontalTextPosition - textSize.width - blankSpace, verticalPosition));
+    textPainter.paint(
+      canvas,
+      Offset(startPadding + horizontalTextPosition, verticalPosition),
+    );
+    textPainter.paint(
+      canvas,
+      Offset(
+        startPadding + horizontalTextPosition - textSize.width - blankSpace,
+        verticalPosition,
+      ),
+    );
   }
 }
