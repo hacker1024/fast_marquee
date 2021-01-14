@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart';
+import 'package:pedantic/pedantic.dart';
 
 /// A widget that repeats text and automatically scrolls it infinitely.
 ///
@@ -382,19 +383,20 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
         if (!mounted || _roundsComplete) return;
         if (widget.bounce && status == AnimationStatus.dismissed) {
-          _controller.forward(from: 0);
+          unawaited(_controller.forward(from: 0));
         } else {
           if (status == AnimationStatus.completed) {
-            if (widget.bounce)
-              _controller.reverse(from: 1);
-            else
-              _controller.forward(from: 0);
+            if (widget.bounce) {
+              unawaited(_controller.reverse(from: 1));
+            } else {
+              unawaited(_controller.forward(from: 0));
+            }
           }
         }
       });
 
       // Start the animation
-      _controller.forward();
+      unawaited(_controller.forward());
 
       // Stop the animation after the time taken to complete the given
       // number of rounds has elapsed.
@@ -444,8 +446,9 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
     // Don't draw a gradient shader if the gradient isn't assigned, or if
     // the widget isn't scrolling and it's set not to fade in that circumstance
     if ((widget._fadeGradient == null ||
-        (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating)))
+        (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating))) {
       return scroller;
+    }
 
     return ShaderMask(
       child: scroller,
@@ -457,7 +460,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
         if (widget.showFadingOnlyWhenScrolling &&
             _textSize.width < rect.width) {
           return const LinearGradient(
-            colors: const <Color>[Color(0xFF000000), Color(0xFF000000)],
+            colors: <Color>[Color(0xFF000000), Color(0xFF000000)],
           ).createShader(shaderRect);
         }
 
