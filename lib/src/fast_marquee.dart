@@ -40,8 +40,8 @@ import 'package:flutter/material.dart';
 /// ```
 class Marquee extends StatefulWidget {
   Marquee({
-    Key key,
-    @required this.text,
+    Key? key,
+    required this.text,
     this.style = const TextStyle(color: Colors.green),
     this.velocity = 100,
     this.blankSpace = 0,
@@ -242,7 +242,7 @@ class Marquee extends StatefulWidget {
   ///   text: 'Stopping after three rounds.',
   /// )
   /// ```
-  final int numberOfRounds;
+  final int? numberOfRounds;
 
   /// Whether the fading edge should only appear while the text is
   /// scrolling.
@@ -331,7 +331,7 @@ class Marquee extends StatefulWidget {
   /// An internal gradient generated for use when fading the edges.
   /// See [showFadingOnlyWhenScrolling], [fadingEdgeStartFraction], and
   /// [fadingEdgeEndFraction] for fading configuration.
-  final LinearGradient _fadeGradient;
+  final LinearGradient? _fadeGradient;
 
   @override
   _MarqueeState createState() => _MarqueeState();
@@ -349,10 +349,10 @@ class Marquee extends StatefulWidget {
 }
 
 class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  Animation<double> _textAnimation;
-  TextPainter _textPainter;
-  Size _textSize;
+  late final AnimationController _controller;
+  late final Animation<double> _textAnimation;
+  late final TextPainter _textPainter;
+  late final Size _textSize;
 
   bool _roundsComplete = false;
 
@@ -390,7 +390,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
         .chain(widget._curveTween)
         .animate(_controller);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance!.addPostFrameCallback((_) async {
       // Wait for the duration passed in startAfter
       await Future.delayed(widget.startAfter);
       if (!mounted) return;
@@ -424,9 +424,9 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
       if (widget.numberOfRounds != null) {
         Timer(
           Duration(
-            microseconds: ((_controller.duration.inMicroseconds +
+            microseconds: ((_controller.duration!.inMicroseconds +
                     widget.pauseAfterRound.inMicroseconds) *
-                widget.numberOfRounds),
+                widget.numberOfRounds!),
           ),
           () {
             _roundsComplete = true;
@@ -484,7 +484,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
           ).createShader(shaderRect);
         }
 
-        return widget._fadeGradient.createShader(shaderRect);
+        return widget._fadeGradient!.createShader(shaderRect);
       },
     );
   }
@@ -498,11 +498,11 @@ class _MarqueePainter extends CustomPainter {
   final double startPadding;
 
   const _MarqueePainter({
-    @required this.horizontalTextPosition,
-    @required this.textPainter,
-    @required this.textSize,
-    @required this.blankSpace,
-    @required this.startPadding,
+    required this.horizontalTextPosition,
+    required this.textPainter,
+    required this.textSize,
+    required this.blankSpace,
+    required this.startPadding,
   });
 
   static Duration getDurationFromVelocity(
