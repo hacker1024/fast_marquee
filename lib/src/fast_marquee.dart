@@ -73,31 +73,14 @@ class Marquee extends StatefulWidget {
                       1,
                     ],
                   ),
-        assert(
-            text != null,
-            'The text cannot be null. If you don\'t want to display something, '
-            'consider passing an empty string instead.'),
-        assert(
-            blankSpace != null,
-            'The blankSpace cannot be null. If you don\'t want any blank space, '
-            'consider setting it to zero instead.'),
         assert(!blankSpace.isNaN),
         assert(blankSpace >= 0, 'The blankSpace needs to be positive or zero.'),
         assert(blankSpace.isFinite),
-        assert(velocity != null),
         assert(!velocity.isNaN),
         assert(velocity != 0.0, 'The velocity cannot be zero.'),
         assert(velocity > 0,
             'The velocity cannot be negative. Set reverse to true instead.'),
         assert(velocity.isFinite),
-        assert(
-            startAfter != null,
-            'The startAfter cannot be null. If you want to start immediately, '
-            'consider setting it to Duration.zero instead.'),
-        assert(
-            pauseAfterRound != null,
-            'The pauseAfterRound cannot be null. If you don\'t want to pause, '
-            'consider setting it to Duration.zero instead.'),
         assert(
             pauseAfterRound >= Duration.zero,
             'The pauseAfterRound cannot be negative as time travel isn\'t '
@@ -106,15 +89,9 @@ class Marquee extends StatefulWidget {
             'The fadingEdgeGradientFractionOnStart value should be between 0 and 0.5, inclusive'),
         assert(fadingEdgeEndFraction >= 0 && fadingEdgeEndFraction <= 0.5,
             'The fadingEdgeGradientFractionOnEnd value should be between 0 and 0.5, inclusive'),
-        assert(
-            startPadding != null,
-            'The start padding cannot be null. If you don\'t want any '
-            'startPadding, consider setting it to zero.'),
         assert(startPadding <= blankSpace,
             'The startPadding must be less than or equal to the blankSpace.'),
         assert(numberOfRounds == null || numberOfRounds > 0),
-        assert(curve != null,
-            'Curve cannot be null. If you don\'t want to use one, consider using Curves.linear.'),
         super(key: key);
 
   /// The text to be displayed.
