@@ -3,7 +3,7 @@ library fast_marquee;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 /// A widget that repeats text and automatically scrolls it infinitely.
 ///
@@ -42,7 +42,7 @@ class Marquee extends StatefulWidget {
   Marquee({
     Key? key,
     required this.text,
-    this.style = const TextStyle(color: Colors.green),
+    this.style = const TextStyle(color: Color(0xFF4CAF5)),
     this.velocity = 100,
     this.blankSpace = 0,
     this.startPadding = 0,
@@ -61,10 +61,10 @@ class Marquee extends StatefulWidget {
                 ? null
                 : LinearGradient(
                     colors: const [
-                      Colors.transparent,
-                      Colors.black,
-                      Colors.black,
-                      Colors.transparent,
+                      Color(0x00000000),
+                      Color(0xFF000000),
+                      Color(0xFF000000),
+                      Color(0x00000000),
                     ],
                     stops: [
                       0,
@@ -457,7 +457,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
         if (widget.showFadingOnlyWhenScrolling &&
             _textSize.width < rect.width) {
           return const LinearGradient(
-            colors: const <Color>[Colors.black, Colors.black],
+            colors: const <Color>[Color(0xFF000000), Color(0xFF000000)],
           ).createShader(shaderRect);
         }
 
