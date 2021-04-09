@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart';
-import 'package:pedantic/pedantic.dart';
 
 /// A widget that repeats text and automatically scrolls it infinitely.
 ///
@@ -43,7 +42,7 @@ class Marquee extends StatefulWidget {
   Marquee({
     Key? key,
     required this.text,
-    this.style = const TextStyle(color: Color(0xFF4CAF5)),
+    this.style,
     this.velocity = 100,
     this.blankSpace = 0,
     this.startPadding = 0,
@@ -123,7 +122,7 @@ class Marquee extends StatefulWidget {
   /// See also:
   ///
   /// * [text] to provide the text itself.
-  final TextStyle style;
+  final TextStyle? style;
 
   /// The extend of blank space to display between instances of the text.
   ///
@@ -383,29 +382,29 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
         if (!mounted || _roundsComplete) return;
         if (widget.bounce && status == AnimationStatus.dismissed) {
-          unawaited(_controller.forward(from: 0));
+          _controller.forward(from: 0);
         } else {
           if (status == AnimationStatus.completed) {
             if (widget.bounce) {
-              unawaited(_controller.reverse(from: 1));
+              _controller.reverse(from: 1);
             } else {
-              unawaited(_controller.forward(from: 0));
+              _controller.forward(from: 0);
             }
           }
         }
       });
 
       // Start the animation
-      unawaited(_controller.forward());
+      _controller.forward();
 
       // Stop the animation after the time taken to complete the given
       // number of rounds has elapsed.
       if (widget.numberOfRounds != null) {
         Timer(
           Duration(
-            microseconds: ((_controller.duration!.inMicroseconds +
+            microseconds: (_controller.duration!.inMicroseconds +
                     widget.pauseAfterRound.inMicroseconds) *
-                widget.numberOfRounds!),
+                widget.numberOfRounds!,
           ),
           () {
             _roundsComplete = true;
@@ -445,13 +444,12 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
     // Don't draw a gradient shader if the gradient isn't assigned, or if
     // the widget isn't scrolling and it's set not to fade in that circumstance
-    if ((widget._fadeGradient == null ||
-        (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating))) {
+    if (widget._fadeGradient == null ||
+        (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating)) {
       return scroller;
     }
 
     return ShaderMask(
-      child: scroller,
       shaderCallback: (rect) {
         final shaderRect = Rect.fromLTRB(0, 0, rect.width, rect.height);
 
@@ -466,6 +464,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
         return widget._fadeGradient!.createShader(shaderRect);
       },
+      child: scroller,
     );
   }
 }
@@ -499,9 +498,9 @@ class _MarqueePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-    final old = (oldDelegate as _MarqueePainter);
-    return (horizontalTextPosition != old.horizontalTextPosition ||
-        textSize.width != old.textSize.width);
+    final old = oldDelegate as _MarqueePainter;
+    return horizontalTextPosition != old.horizontalTextPosition ||
+        textSize.width != old.textSize.width;
   }
 
   @override
