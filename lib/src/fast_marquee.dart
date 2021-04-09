@@ -497,10 +497,9 @@ class _MarqueePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    final old = oldDelegate as _MarqueePainter;
-    return horizontalTextPosition != old.horizontalTextPosition ||
-        textSize.width != old.textSize.width;
+  bool shouldRepaint(_MarqueePainter oldDelegate) {
+    return horizontalTextPosition != oldDelegate.horizontalTextPosition ||
+        textSize.width != oldDelegate.textSize.width;
   }
 
   @override
