@@ -2,10 +2,12 @@ import 'package:fast_marquee/fast_marquee.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -15,20 +17,19 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     Widget buildSimpleMarquee() {
       return Marquee(
         text: 'This is a simple marquee.',
-        style: const TextStyle(
-          color: Colors.black,
-        ),
         blankSpace: 10,
       );
     }
@@ -36,9 +37,6 @@ class MyHomePage extends StatelessWidget {
     Widget buildCustomizedMarquee() {
       return Marquee(
         text: 'This is a very customized marquee.',
-        style: const TextStyle(
-          color: Colors.black,
-        ),
         velocity: 150,
         blankSpace: 30,
         startPadding: 10,

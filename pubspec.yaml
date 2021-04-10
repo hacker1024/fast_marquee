@@ -1,12 +1,13 @@
 name: fast_marquee
 description: A clone of the marquee package, providing a Flutter widget that scrolls text infinitely.
-version: 0.1.1
+version: 0.2.0-rc1
 homepage: https://github.com/hacker1024/fast_marquee
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.17.0 <2.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  lint: ^1.5.3

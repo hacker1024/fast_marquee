@@ -6,13 +6,16 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   fast_marquee:
     path: '../'
+
+dev_dependencies:
+  lint: ^1.5.3
 
 flutter:
   uses-material-design: true

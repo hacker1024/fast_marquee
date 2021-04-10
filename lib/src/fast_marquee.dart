@@ -3,7 +3,7 @@ library fast_marquee;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 /// A widget that repeats text and automatically scrolls it infinitely.
 ///
@@ -40,9 +40,9 @@ import 'package:flutter/material.dart';
 /// ```
 class Marquee extends StatefulWidget {
   Marquee({
-    Key key,
-    @required this.text,
-    this.style = const TextStyle(color: Colors.green),
+    Key? key,
+    required this.text,
+    this.style,
     this.velocity = 100,
     this.blankSpace = 0,
     this.startPadding = 0,
@@ -54,17 +54,16 @@ class Marquee extends StatefulWidget {
     this.showFadingOnlyWhenScrolling = true,
     this.fadingEdgeStartFraction = 0,
     this.fadingEdgeEndFraction = 0,
-    final Curve curve = Curves.linear,
-  })  : _curveTween = CurveTween(curve: curve),
-        _fadeGradient =
+    this.curve = Curves.linear,
+  })  : _fadeGradient =
             fadingEdgeStartFraction == 0 && fadingEdgeEndFraction == 0
                 ? null
                 : LinearGradient(
                     colors: const [
-                      Colors.transparent,
-                      Colors.black,
-                      Colors.black,
-                      Colors.transparent,
+                      Color(0x00000000),
+                      Color(0xFF000000),
+                      Color(0xFF000000),
+                      Color(0x00000000),
                     ],
                     stops: [
                       0,
@@ -73,31 +72,14 @@ class Marquee extends StatefulWidget {
                       1,
                     ],
                   ),
-        assert(
-            text != null,
-            'The text cannot be null. If you don\'t want to display something, '
-            'consider passing an empty string instead.'),
-        assert(
-            blankSpace != null,
-            'The blankSpace cannot be null. If you don\'t want any blank space, '
-            'consider setting it to zero instead.'),
         assert(!blankSpace.isNaN),
         assert(blankSpace >= 0, 'The blankSpace needs to be positive or zero.'),
         assert(blankSpace.isFinite),
-        assert(velocity != null),
         assert(!velocity.isNaN),
         assert(velocity != 0.0, 'The velocity cannot be zero.'),
         assert(velocity > 0,
             'The velocity cannot be negative. Set reverse to true instead.'),
         assert(velocity.isFinite),
-        assert(
-            startAfter != null,
-            'The startAfter cannot be null. If you want to start immediately, '
-            'consider setting it to Duration.zero instead.'),
-        assert(
-            pauseAfterRound != null,
-            'The pauseAfterRound cannot be null. If you don\'t want to pause, '
-            'consider setting it to Duration.zero instead.'),
         assert(
             pauseAfterRound >= Duration.zero,
             'The pauseAfterRound cannot be negative as time travel isn\'t '
@@ -106,15 +88,9 @@ class Marquee extends StatefulWidget {
             'The fadingEdgeGradientFractionOnStart value should be between 0 and 0.5, inclusive'),
         assert(fadingEdgeEndFraction >= 0 && fadingEdgeEndFraction <= 0.5,
             'The fadingEdgeGradientFractionOnEnd value should be between 0 and 0.5, inclusive'),
-        assert(
-            startPadding != null,
-            'The start padding cannot be null. If you don\'t want any '
-            'startPadding, consider setting it to zero.'),
         assert(startPadding <= blankSpace,
             'The startPadding must be less than or equal to the blankSpace.'),
         assert(numberOfRounds == null || numberOfRounds > 0),
-        assert(curve != null,
-            'Curve cannot be null. If you don\'t want to use one, consider using Curves.linear.'),
         super(key: key);
 
   /// The text to be displayed.
@@ -125,11 +101,6 @@ class Marquee extends StatefulWidget {
   final String text;
 
   /// The style of the text to be displayed.
-  ///
-  /// Note: this should usually be used to set a color, as green is
-  /// the default. (Green is the default instead of black because the default
-  /// Flutter text themes don't use pure black. If black was the default here,
-  /// people may use it instead of the correct shade.)
   ///
   /// ## Sample code
   ///
@@ -145,7 +116,7 @@ class Marquee extends StatefulWidget {
   /// See also:
   ///
   /// * [text] to provide the text itself.
-  final TextStyle style;
+  final TextStyle? style;
 
   /// The extend of blank space to display between instances of the text.
   ///
@@ -242,7 +213,7 @@ class Marquee extends StatefulWidget {
   ///   text: 'Stopping after three rounds.',
   /// )
   /// ```
-  final int numberOfRounds;
+  final int? numberOfRounds;
 
   /// Whether the fading edge should only appear while the text is
   /// scrolling.
@@ -314,7 +285,6 @@ class Marquee extends StatefulWidget {
   final double startPadding;
 
   /// The animation curve.
-  /// Use the [curve] constructor argument to set this.
   ///
   /// This curve defines the text's movement speed over one cycle.
   ///
@@ -326,12 +296,12 @@ class Marquee extends StatefulWidget {
   //    text: 'During pausing, this text is shifted 20 pixel to the right.',
   //  )
   /// ```
-  final CurveTween _curveTween;
+  final Curve curve;
 
   /// An internal gradient generated for use when fading the edges.
   /// See [showFadingOnlyWhenScrolling], [fadingEdgeStartFraction], and
   /// [fadingEdgeEndFraction] for fading configuration.
-  final LinearGradient _fadeGradient;
+  final LinearGradient? _fadeGradient;
 
   @override
   _MarqueeState createState() => _MarqueeState();
@@ -349,48 +319,81 @@ class Marquee extends StatefulWidget {
 }
 
 class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  Animation<double> _textAnimation;
-  TextPainter _textPainter;
-  Size _textSize;
+  late final AnimationController _controller;
+  late Animation<double> _textAnimation;
+  late TextPainter _textPainter;
+  late Size _textSize;
 
   bool _roundsComplete = false;
+
+  TextStyle _getTextStyle(Marquee widget) =>
+      widget.style ?? DefaultTextStyle.of(context).style;
+
+  TextPainter _buildTextPainter() => TextPainter(
+        textDirection: TextDirection.ltr,
+        text: TextSpan(
+          text: widget.text,
+          style: _getTextStyle(widget),
+        ),
+      )..layout();
+
+  bool _needsNewTextPainter(Marquee oldWidget) =>
+      oldWidget.text != widget.text ||
+      _getTextStyle(oldWidget) != _getTextStyle(widget);
+
+  Duration _getDuration() => _MarqueePainter.calculateDurationFromVelocity(
+      widget.velocity, _textSize.width, widget.blankSpace);
+
+  AnimationController _buildAnimationController() => AnimationController(
+        vsync: this,
+        duration: _getDuration(),
+      );
+
+  bool _needsUpdateAnimationController(Marquee oldWidget,
+          {required bool needsNewTextPainter}) =>
+      needsNewTextPainter ||
+      oldWidget.velocity != widget.velocity ||
+      oldWidget.blankSpace != widget.blankSpace;
+
+  void _updateAnimationController() => _controller.duration = _getDuration();
+
+  Animation<double> _buildTextAnimation() => (widget.reverse
+          ? Tween<double>(
+              end: _textSize.width + widget.blankSpace,
+              begin: 0,
+            )
+          : Tween<double>(
+              begin: _textSize.width + widget.blankSpace,
+              end: 0,
+            ))
+      .chain(CurveTween(curve: widget.curve))
+      .animate(_controller);
+
+  bool _needsNewTextAnimation(
+    Marquee oldWidget, {
+    required bool needsNewTextPainter,
+    required bool needsUpdateAnimationController,
+  }) =>
+      needsNewTextPainter ||
+      needsUpdateAnimationController ||
+      oldWidget.blankSpace != widget.blankSpace ||
+      oldWidget.curve != widget.curve;
 
   @override
   void initState() {
     super.initState();
 
     // Make the text painter, and record its size
-    _textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      text: TextSpan(
-        text: widget.text,
-        style: widget.style,
-      ),
-    )..layout();
+    _textPainter = _buildTextPainter();
     _textSize = _textPainter.size;
 
     // Create the animation controller
-    _controller = AnimationController(
-      vsync: this,
-      duration: _MarqueePainter.getDurationFromVelocity(
-          widget.velocity, _textSize.width, widget.blankSpace),
-    );
+    _controller = _buildAnimationController();
 
     // Create a scaled, curved animation that has a value equal to the horizontal text position
-    _textAnimation = (widget.reverse
-            ? Tween<double>(
-                end: _textSize.width + widget.blankSpace,
-                begin: 0,
-              )
-            : Tween<double>(
-                begin: _textSize.width + widget.blankSpace,
-                end: 0,
-              ))
-        .chain(widget._curveTween)
-        .animate(_controller);
+    _textAnimation = _buildTextAnimation();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance!.addPostFrameCallback((_) async {
       // Wait for the duration passed in startAfter
       await Future.delayed(widget.startAfter);
       if (!mounted) return;
@@ -408,10 +411,11 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
           _controller.forward(from: 0);
         } else {
           if (status == AnimationStatus.completed) {
-            if (widget.bounce)
+            if (widget.bounce) {
               _controller.reverse(from: 1);
-            else
+            } else {
               _controller.forward(from: 0);
+            }
           }
         }
       });
@@ -424,9 +428,9 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
       if (widget.numberOfRounds != null) {
         Timer(
           Duration(
-            microseconds: ((_controller.duration.inMicroseconds +
+            microseconds: (_controller.duration!.inMicroseconds +
                     widget.pauseAfterRound.inMicroseconds) *
-                widget.numberOfRounds),
+                widget.numberOfRounds!,
           ),
           () {
             _roundsComplete = true;
@@ -440,6 +444,27 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(Marquee oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final needsNewTextPainter = _needsNewTextPainter(oldWidget);
+    if (needsNewTextPainter) {
+      _textPainter = _buildTextPainter();
+      _textSize = _textPainter.size;
+    }
+    final needsUpdateAnimationController = _needsUpdateAnimationController(
+      oldWidget,
+      needsNewTextPainter: needsNewTextPainter,
+    );
+    if (needsUpdateAnimationController) _updateAnimationController();
+    final needsNewTextAnimation = _needsNewTextAnimation(
+      oldWidget,
+      needsNewTextPainter: needsNewTextPainter,
+      needsUpdateAnimationController: needsUpdateAnimationController,
+    );
+    if (needsNewTextAnimation) _textAnimation = _buildTextAnimation();
   }
 
   @override
@@ -466,12 +491,12 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
     // Don't draw a gradient shader if the gradient isn't assigned, or if
     // the widget isn't scrolling and it's set not to fade in that circumstance
-    if ((widget._fadeGradient == null ||
-        (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating)))
+    if (widget._fadeGradient == null ||
+        (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating)) {
       return scroller;
+    }
 
     return ShaderMask(
-      child: scroller,
       shaderCallback: (rect) {
         final shaderRect = Rect.fromLTRB(0, 0, rect.width, rect.height);
 
@@ -480,12 +505,13 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
         if (widget.showFadingOnlyWhenScrolling &&
             _textSize.width < rect.width) {
           return const LinearGradient(
-            colors: const <Color>[Colors.black, Colors.black],
+            colors: <Color>[Color(0xFF000000), Color(0xFF000000)],
           ).createShader(shaderRect);
         }
 
-        return widget._fadeGradient.createShader(shaderRect);
+        return widget._fadeGradient!.createShader(shaderRect);
       },
+      child: scroller,
     );
   }
 }
@@ -498,31 +524,31 @@ class _MarqueePainter extends CustomPainter {
   final double startPadding;
 
   const _MarqueePainter({
-    @required this.horizontalTextPosition,
-    @required this.textPainter,
-    @required this.textSize,
-    @required this.blankSpace,
-    @required this.startPadding,
-  });
+    required this.horizontalTextPosition,
+    required this.textPainter,
+    required this.textSize,
+    required this.blankSpace,
+    required this.startPadding,
+  })   : assert(blankSpace >= 0),
+        assert(startPadding >= 0);
 
-  static Duration getDurationFromVelocity(
+  static Duration calculateDurationFromVelocity(
     double velocity,
     double textWidth,
     double blankSpace,
-  ) {
-    return Duration(
-      microseconds: ((Duration.microsecondsPerSecond / velocity) *
-              (textWidth + blankSpace))
-          .toInt(),
-    );
-  }
+  ) =>
+      Duration(
+          microseconds: ((Duration.microsecondsPerSecond / velocity) *
+                  (textWidth + blankSpace))
+              .toInt());
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    final old = (oldDelegate as _MarqueePainter);
-    return (horizontalTextPosition != old.horizontalTextPosition ||
-        textSize.width != old.textSize.width);
-  }
+  bool shouldRepaint(_MarqueePainter oldDelegate) =>
+      horizontalTextPosition != oldDelegate.horizontalTextPosition ||
+      textPainter != oldDelegate.textPainter ||
+      textSize != oldDelegate.textSize ||
+      blankSpace != oldDelegate.blankSpace ||
+      startPadding != oldDelegate.startPadding;
 
   @override
   void paint(Canvas canvas, Size size) {
