@@ -38,61 +38,7 @@ import 'package:flutter/widgets.dart';
 ///   curve: Curves.easeInOut,
 /// )
 /// ```
-class Marquee extends StatefulWidget {
-  Marquee({
-    Key? key,
-    required this.text,
-    this.style,
-    this.velocity = 100,
-    this.blankSpace = 0,
-    this.startPadding = 0,
-    this.reverse = false,
-    this.bounce = false,
-    this.startAfter = Duration.zero,
-    this.pauseAfterRound = Duration.zero,
-    this.numberOfRounds,
-    this.showFadingOnlyWhenScrolling = true,
-    this.fadingEdgeStartFraction = 0,
-    this.fadingEdgeEndFraction = 0,
-    this.curve = Curves.linear,
-  })  : _fadeGradient =
-            fadingEdgeStartFraction == 0 && fadingEdgeEndFraction == 0
-                ? null
-                : LinearGradient(
-                    colors: const [
-                      Color(0x00000000),
-                      Color(0xFF000000),
-                      Color(0xFF000000),
-                      Color(0x00000000),
-                    ],
-                    stops: [
-                      0,
-                      fadingEdgeStartFraction,
-                      1 - fadingEdgeEndFraction,
-                      1,
-                    ],
-                  ),
-        assert(!blankSpace.isNaN),
-        assert(blankSpace >= 0, 'The blankSpace needs to be positive or zero.'),
-        assert(blankSpace.isFinite),
-        assert(!velocity.isNaN),
-        assert(velocity != 0.0, 'The velocity cannot be zero.'),
-        assert(velocity > 0,
-            'The velocity cannot be negative. Set reverse to true instead.'),
-        assert(velocity.isFinite),
-        assert(
-            pauseAfterRound >= Duration.zero,
-            'The pauseAfterRound cannot be negative as time travel isn\'t '
-            'invented yet.'),
-        assert(fadingEdgeStartFraction >= 0 && fadingEdgeStartFraction <= 0.5,
-            'The fadingEdgeGradientFractionOnStart value should be between 0 and 0.5, inclusive'),
-        assert(fadingEdgeEndFraction >= 0 && fadingEdgeEndFraction <= 0.5,
-            'The fadingEdgeGradientFractionOnEnd value should be between 0 and 0.5, inclusive'),
-        assert(startPadding <= blankSpace,
-            'The startPadding must be less than or equal to the blankSpace.'),
-        assert(numberOfRounds == null || numberOfRounds > 0),
-        super(key: key);
-
+class Marquee extends StatelessWidget {
   /// The text to be displayed.
   ///
   /// See also:
@@ -298,27 +244,149 @@ class Marquee extends StatefulWidget {
   /// ```
   final Curve curve;
 
+  const Marquee({
+    Key? key,
+    required this.text,
+    this.style,
+    this.velocity = 100,
+    this.blankSpace = 0,
+    this.startPadding = 0,
+    this.reverse = false,
+    this.bounce = false,
+    this.startAfter = Duration.zero,
+    this.pauseAfterRound = Duration.zero,
+    this.numberOfRounds,
+    this.showFadingOnlyWhenScrolling = true,
+    this.fadingEdgeStartFraction = 0,
+    this.fadingEdgeEndFraction = 0,
+    this.curve = Curves.linear,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => _StyledMarquee(
+        text: text,
+        style: style ?? DefaultTextStyle.of(context).style,
+        velocity: velocity,
+        blankSpace: blankSpace,
+        startPadding: startPadding,
+        reverse: reverse,
+        bounce: bounce,
+        startAfter: startAfter,
+        pauseAfterRound: pauseAfterRound,
+        numberOfRounds: numberOfRounds,
+        showFadingOnlyWhenScrolling: showFadingOnlyWhenScrolling,
+        fadingEdgeStartFraction: fadingEdgeStartFraction,
+        fadingEdgeEndFraction: fadingEdgeEndFraction,
+        curve: curve,
+      );
+}
+
+class _StyledMarquee extends StatefulWidget {
+  /// Equivalent to [Marquee.text].
+  final String text;
+
+  /// Equivalent to [Marquee.style].
+  final TextStyle style;
+
+  /// Equivalent to [Marquee.blankSpace].
+  final double blankSpace;
+
+  /// Equivalent to [Marquee.velocity].
+  final double velocity;
+
+  /// Equivalent to [Marquee.reverse].
+  final bool reverse;
+
+  /// Equivalent to [Marquee.bounce].
+  final bool bounce;
+
+  /// Equivalent to [Marquee.startAfter].
+  final Duration startAfter;
+
+  /// Equivalent to [Marquee.pauseAfterRound].
+  final Duration pauseAfterRound;
+
+  /// Equivalent to [Marquee.numberOfRounds].
+  final int? numberOfRounds;
+
+  /// Equivalent to [Marquee.showFadingOnlyWhenScrolling].
+  final bool showFadingOnlyWhenScrolling;
+
+  /// Equivalent to [Marquee.startPadding].
+  final double startPadding;
+
+  /// Equivalent to [Marquee.curve].
+  final Curve curve;
+
   /// An internal gradient generated for use when fading the edges.
   /// See [showFadingOnlyWhenScrolling], [fadingEdgeStartFraction], and
   /// [fadingEdgeEndFraction] for fading configuration.
-  final LinearGradient? _fadeGradient;
+  final Gradient? _fadeGradient;
+
+  _StyledMarquee({
+    Key? key,
+    required this.text,
+    required this.style,
+    required this.velocity,
+    required this.blankSpace,
+    required this.startPadding,
+    required this.reverse,
+    required this.bounce,
+    required this.startAfter,
+    required this.pauseAfterRound,
+    this.numberOfRounds,
+    required this.showFadingOnlyWhenScrolling,
+    required double fadingEdgeStartFraction,
+    required double fadingEdgeEndFraction,
+    required this.curve,
+  })   : assert(!blankSpace.isNaN),
+        assert(blankSpace >= 0, 'The blankSpace needs to be positive or zero.'),
+        assert(blankSpace.isFinite),
+        assert(!velocity.isNaN),
+        assert(velocity != 0.0, 'The velocity cannot be zero.'),
+        assert(velocity > 0,
+            'The velocity cannot be negative. Set reverse to true instead.'),
+        assert(velocity.isFinite),
+        assert(
+            pauseAfterRound >= Duration.zero,
+            'The pauseAfterRound cannot be negative as time travel isn\'t '
+            'invented yet.'),
+        assert(fadingEdgeStartFraction >= 0 && fadingEdgeStartFraction <= 0.5,
+            'The fadingEdgeGradientFractionOnStart value should be between 0 and 0.5, inclusive'),
+        assert(fadingEdgeEndFraction >= 0 && fadingEdgeEndFraction <= 0.5,
+            'The fadingEdgeGradientFractionOnEnd value should be between 0 and 0.5, inclusive'),
+        assert(startPadding <= blankSpace,
+            'The startPadding must be less than or equal to the blankSpace.'),
+        assert(numberOfRounds == null || numberOfRounds > 0),
+        _fadeGradient =
+            _buildFadeGradient(fadingEdgeStartFraction, fadingEdgeEndFraction),
+        super(key: key);
 
   @override
-  _MarqueeState createState() => _MarqueeState();
+  _StyledMarqueeState createState() => _StyledMarqueeState();
 
-  bool equals(Object other) {
-    return other is Marquee &&
-        text == other.text &&
-        style == other.style &&
-        blankSpace == other.blankSpace &&
-        velocity == other.velocity &&
-        startPadding == other.startPadding &&
-        pauseAfterRound == other.pauseAfterRound &&
-        numberOfRounds == other.numberOfRounds;
-  }
+  static Gradient? _buildFadeGradient(
+          double startFraction, double endFraction) =>
+      startFraction == 0 && endFraction == 0
+          ? null
+          : LinearGradient(
+              colors: const [
+                Color(0x00000000),
+                Color(0xFF000000),
+                Color(0xFF000000),
+                Color(0x00000000),
+              ],
+              stops: [
+                0,
+                startFraction,
+                1 - endFraction,
+                1,
+              ],
+            );
 }
 
-class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
+class _StyledMarqueeState extends State<_StyledMarquee>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late Animation<double> _textAnimation;
   late TextPainter _textPainter;
@@ -326,20 +394,16 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
 
   bool _roundsComplete = false;
 
-  TextStyle _getTextStyle(Marquee widget) =>
-      widget.style ?? DefaultTextStyle.of(context).style;
-
   TextPainter _buildTextPainter() => TextPainter(
         textDirection: TextDirection.ltr,
         text: TextSpan(
           text: widget.text,
-          style: _getTextStyle(widget),
+          style: widget.style,
         ),
       )..layout();
 
-  bool _needsNewTextPainter(Marquee oldWidget) =>
-      oldWidget.text != widget.text ||
-      _getTextStyle(oldWidget) != _getTextStyle(widget);
+  bool _needsNewTextPainter(_StyledMarquee oldWidget) =>
+      oldWidget.text != widget.text || oldWidget.style != widget.style;
 
   Duration _getDuration() => _MarqueePainter.calculateDurationFromVelocity(
       widget.velocity, _textSize.width, widget.blankSpace);
@@ -349,7 +413,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
         duration: _getDuration(),
       );
 
-  bool _needsUpdateAnimationController(Marquee oldWidget,
+  bool _needsUpdateAnimationController(_StyledMarquee oldWidget,
           {required bool needsNewTextPainter}) =>
       needsNewTextPainter ||
       oldWidget.velocity != widget.velocity ||
@@ -370,7 +434,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
       .animate(_controller);
 
   bool _needsNewTextAnimation(
-    Marquee oldWidget, {
+    _StyledMarquee oldWidget, {
     required bool needsNewTextPainter,
     required bool needsUpdateAnimationController,
   }) =>
@@ -447,7 +511,7 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
   }
 
   @override
-  void didUpdateWidget(Marquee oldWidget) {
+  void didUpdateWidget(_StyledMarquee oldWidget) {
     super.didUpdateWidget(oldWidget);
     final needsNewTextPainter = _needsNewTextPainter(oldWidget);
     if (needsNewTextPainter) {
