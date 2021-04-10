@@ -54,9 +54,8 @@ class Marquee extends StatefulWidget {
     this.showFadingOnlyWhenScrolling = true,
     this.fadingEdgeStartFraction = 0,
     this.fadingEdgeEndFraction = 0,
-    final Curve curve = Curves.linear,
-  })  : _curveTween = CurveTween(curve: curve),
-        _fadeGradient =
+    this.curve = Curves.linear,
+  })  : _fadeGradient =
             fadingEdgeStartFraction == 0 && fadingEdgeEndFraction == 0
                 ? null
                 : LinearGradient(
@@ -102,11 +101,6 @@ class Marquee extends StatefulWidget {
   final String text;
 
   /// The style of the text to be displayed.
-  ///
-  /// Note: this should usually be used to set a color, as green is
-  /// the default. (Green is the default instead of black because the default
-  /// Flutter text themes don't use pure black. If black was the default here,
-  /// people may use it instead of the correct shade.)
   ///
   /// ## Sample code
   ///
@@ -291,7 +285,6 @@ class Marquee extends StatefulWidget {
   final double startPadding;
 
   /// The animation curve.
-  /// Use the [curve] constructor argument to set this.
   ///
   /// This curve defines the text's movement speed over one cycle.
   ///
@@ -303,7 +296,7 @@ class Marquee extends StatefulWidget {
   //    text: 'During pausing, this text is shifted 20 pixel to the right.',
   //  )
   /// ```
-  final CurveTween _curveTween;
+  final Curve curve;
 
   /// An internal gradient generated for use when fading the edges.
   /// See [showFadingOnlyWhenScrolling], [fadingEdgeStartFraction], and
@@ -327,45 +320,78 @@ class Marquee extends StatefulWidget {
 
 class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _textAnimation;
-  late final TextPainter _textPainter;
-  late final Size _textSize;
+  late Animation<double> _textAnimation;
+  late TextPainter _textPainter;
+  late Size _textSize;
 
   bool _roundsComplete = false;
+
+  TextStyle _getTextStyle(Marquee widget) =>
+      widget.style ?? DefaultTextStyle.of(context).style;
+
+  TextPainter _buildTextPainter() => TextPainter(
+        textDirection: TextDirection.ltr,
+        text: TextSpan(
+          text: widget.text,
+          style: _getTextStyle(widget),
+        ),
+      )..layout();
+
+  bool _needsNewTextPainter(Marquee oldWidget) =>
+      oldWidget.text != widget.text ||
+      _getTextStyle(oldWidget) != _getTextStyle(widget);
+
+  Duration _getDuration() => _MarqueePainter.calculateDurationFromVelocity(
+      widget.velocity, _textSize.width, widget.blankSpace);
+
+  AnimationController _buildAnimationController() => AnimationController(
+        vsync: this,
+        duration: _getDuration(),
+      );
+
+  bool _needsUpdateAnimationController(Marquee oldWidget,
+          {required bool needsNewTextPainter}) =>
+      needsNewTextPainter ||
+      oldWidget.velocity != widget.velocity ||
+      oldWidget.blankSpace != widget.blankSpace;
+
+  void _updateAnimationController() => _controller.duration = _getDuration();
+
+  Animation<double> _buildTextAnimation() => (widget.reverse
+          ? Tween<double>(
+              end: _textSize.width + widget.blankSpace,
+              begin: 0,
+            )
+          : Tween<double>(
+              begin: _textSize.width + widget.blankSpace,
+              end: 0,
+            ))
+      .chain(CurveTween(curve: widget.curve))
+      .animate(_controller);
+
+  bool _needsNewTextAnimation(
+    Marquee oldWidget, {
+    required bool needsNewTextPainter,
+    required bool needsUpdateAnimationController,
+  }) =>
+      needsNewTextPainter ||
+      needsUpdateAnimationController ||
+      oldWidget.blankSpace != widget.blankSpace ||
+      oldWidget.curve != widget.curve;
 
   @override
   void initState() {
     super.initState();
 
     // Make the text painter, and record its size
-    _textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      text: TextSpan(
-        text: widget.text,
-        style: widget.style,
-      ),
-    )..layout();
+    _textPainter = _buildTextPainter();
     _textSize = _textPainter.size;
 
     // Create the animation controller
-    _controller = AnimationController(
-      vsync: this,
-      duration: _MarqueePainter.getDurationFromVelocity(
-          widget.velocity, _textSize.width, widget.blankSpace),
-    );
+    _controller = _buildAnimationController();
 
     // Create a scaled, curved animation that has a value equal to the horizontal text position
-    _textAnimation = (widget.reverse
-            ? Tween<double>(
-                end: _textSize.width + widget.blankSpace,
-                begin: 0,
-              )
-            : Tween<double>(
-                begin: _textSize.width + widget.blankSpace,
-                end: 0,
-              ))
-        .chain(widget._curveTween)
-        .animate(_controller);
+    _textAnimation = _buildTextAnimation();
 
     WidgetsBinding.instance!.addPostFrameCallback((_) async {
       // Wait for the duration passed in startAfter
@@ -418,6 +444,27 @@ class _MarqueeState extends State<Marquee> with SingleTickerProviderStateMixin {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(Marquee oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final needsNewTextPainter = _needsNewTextPainter(oldWidget);
+    if (needsNewTextPainter) {
+      _textPainter = _buildTextPainter();
+      _textSize = _textPainter.size;
+    }
+    final needsUpdateAnimationController = _needsUpdateAnimationController(
+      oldWidget,
+      needsNewTextPainter: needsNewTextPainter,
+    );
+    if (needsUpdateAnimationController) _updateAnimationController();
+    final needsNewTextAnimation = _needsNewTextAnimation(
+      oldWidget,
+      needsNewTextPainter: needsNewTextPainter,
+      needsUpdateAnimationController: needsUpdateAnimationController,
+    );
+    if (needsNewTextAnimation) _textAnimation = _buildTextAnimation();
   }
 
   @override
@@ -482,25 +529,26 @@ class _MarqueePainter extends CustomPainter {
     required this.textSize,
     required this.blankSpace,
     required this.startPadding,
-  });
+  })   : assert(blankSpace >= 0),
+        assert(startPadding >= 0);
 
-  static Duration getDurationFromVelocity(
+  static Duration calculateDurationFromVelocity(
     double velocity,
     double textWidth,
     double blankSpace,
-  ) {
-    return Duration(
-      microseconds: ((Duration.microsecondsPerSecond / velocity) *
-              (textWidth + blankSpace))
-          .toInt(),
-    );
-  }
+  ) =>
+      Duration(
+          microseconds: ((Duration.microsecondsPerSecond / velocity) *
+                  (textWidth + blankSpace))
+              .toInt());
 
   @override
-  bool shouldRepaint(_MarqueePainter oldDelegate) {
-    return horizontalTextPosition != oldDelegate.horizontalTextPosition ||
-        textSize.width != oldDelegate.textSize.width;
-  }
+  bool shouldRepaint(_MarqueePainter oldDelegate) =>
+      horizontalTextPosition != oldDelegate.horizontalTextPosition ||
+      textPainter != oldDelegate.textPainter ||
+      textSize != oldDelegate.textSize ||
+      blankSpace != oldDelegate.blankSpace ||
+      startPadding != oldDelegate.startPadding;
 
   @override
   void paint(Canvas canvas, Size size) {

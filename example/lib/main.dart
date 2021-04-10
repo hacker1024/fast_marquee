@@ -26,9 +26,6 @@ class MyHomePage extends StatelessWidget {
     Widget buildSimpleMarquee() {
       return Marquee(
         text: 'This is a simple marquee.',
-        style: const TextStyle(
-          color: Colors.black,
-        ),
         blankSpace: 10,
       );
     }
@@ -36,9 +33,6 @@ class MyHomePage extends StatelessWidget {
     Widget buildCustomizedMarquee() {
       return Marquee(
         text: 'This is a very customized marquee.',
-        style: const TextStyle(
-          color: Colors.black,
-        ),
         velocity: 150,
         blankSpace: 30,
         startPadding: 10,
