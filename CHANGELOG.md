@@ -1,5 +1,6 @@
 ## [0.2.0-rc1]
 - Allow widget properties to be updated
+- Use the `DefaultTextStyle` by default
 - Enable null safety
 
 ## [0.1.1]
