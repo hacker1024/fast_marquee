@@ -164,6 +164,9 @@ class Marquee extends StatelessWidget {
   /// Whether the fading edge should only appear while the text is
   /// scrolling.
   ///
+  /// If the marquee text will never scroll (when there's enough space to show
+  /// it all), fading will never occur regardless of this value.
+  ///
   /// ## Sample code
   ///
   /// This marquee will only show the fade while scrolling.
@@ -554,7 +557,7 @@ class _StyledMarqueeState extends State<_StyledMarquee>
     if (kIsWeb) return scroller;
 
     // Don't draw a gradient shader if the gradient isn't assigned, or if
-    // the widget isn't scrolling and it's set not to fade in that circumstance
+    // the widget isn't scrolling and it's set not to fade in that circumstance.
     if (widget._fadeGradient == null ||
         (widget.showFadingOnlyWhenScrolling && !_controller.isAnimating)) {
       return scroller;
@@ -564,10 +567,8 @@ class _StyledMarqueeState extends State<_StyledMarquee>
       shaderCallback: (rect) {
         final shaderRect = Rect.fromLTRB(0, 0, rect.width, rect.height);
 
-        // Don't fade if the text won't scroll at all
-        // and fading while not scrolling is off
-        if (widget.showFadingOnlyWhenScrolling &&
-            _textSize.width < rect.width) {
+        // Don't fade if the text won't scroll at all.
+        if (_textSize.width < rect.width) {
           return const LinearGradient(
             colors: <Color>[Color(0xFF000000), Color(0xFF000000)],
           ).createShader(shaderRect);
