@@ -443,6 +443,7 @@ class _StyledMarqueeState extends State<_StyledMarquee>
   }) =>
       needsNewTextPainter ||
       needsUpdateAnimationController ||
+      oldWidget.reverse != widget.reverse ||
       oldWidget.blankSpace != widget.blankSpace ||
       oldWidget.curve != widget.curve;
 
