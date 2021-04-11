@@ -575,6 +575,7 @@ class _StyledMarqueeState extends State<_StyledMarquee>
 
         return widget._fadeGradient!.createShader(shaderRect);
       },
+      blendMode: BlendMode.dstIn,
       child: scroller,
     );
   }
