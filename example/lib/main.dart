@@ -28,14 +28,14 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget buildSimpleMarquee() {
-      return Marquee(
+      return const Marquee(
         text: 'This is a simple marquee.',
         blankSpace: 10,
       );
     }
 
     Widget buildCustomizedMarquee() {
-      return Marquee(
+      return const Marquee(
         text: 'This is a very customized marquee.',
         velocity: 150,
         blankSpace: 30,
@@ -43,7 +43,7 @@ class MyHomePage extends StatelessWidget {
         reverse: true,
         bounce: true,
         startAfter: Duration.zero,
-        pauseAfterRound: const Duration(seconds: 1),
+        pauseAfterRound: Duration(seconds: 1),
         // numberOfRounds: 5,
         showFadingOnlyWhenScrolling: true,
         fadingEdgeStartFraction: 0.05,
