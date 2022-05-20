@@ -461,7 +461,7 @@ class _StyledMarqueeState extends State<_StyledMarquee>
     // Create a scaled, curved animation that has a value equal to the horizontal text position
     _textAnimation = _buildTextAnimation();
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Wait for the duration passed in startAfter
       await Future.delayed(widget.startAfter);
       if (!mounted) return;
